@@ -8,3 +8,13 @@ export function assertApprovalTransition(current: EnrollmentStatus, target: "app
   if (current !== "pending") throw new Error("승인 대기 상태만 처리할 수 있습니다.");
   return target;
 }
+
+export function assertManagerEnrollmentAction(
+  current: EnrollmentStatus,
+  target: "approved" | "rejected",
+) {
+  if (current !== "pending" && current !== "waiting") {
+    throw new Error("승인 대기 또는 대기 상태만 처리할 수 있습니다.");
+  }
+  return target;
+}

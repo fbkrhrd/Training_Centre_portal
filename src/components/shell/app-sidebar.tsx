@@ -26,6 +26,7 @@ export function AppSidebar({ dictionary, role }: AppSidebarProps) {
             {dictionary.users}
           </Link>
         ) : null}
+        {canManageUsers ? <Link className="app-sidebar__link" href="/admin/enrollments"><span className="app-sidebar__mark" aria-hidden="true" />신청 승인 관리</Link> : null}
         {canManageUsers ? (
           <Link className="app-sidebar__link" href="/admin/sessions"><span className="app-sidebar__mark" aria-hidden="true" />차수 관리</Link>
         ) : null}
