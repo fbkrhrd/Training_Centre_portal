@@ -6,7 +6,7 @@
 
 - Next.js 16 App Router, React 19, TypeScript, Tailwind CSS
 - Supabase Auth, PostgreSQL, RLS
-- Vitest, Testing Library, pgTAP, Playwright
+- Vitest, Testing Library, Playwright
 - GitHub 비공개 저장소와 Vercel
 - Node.js 22, pnpm 11.19.0
 
@@ -14,7 +14,7 @@
 
 - Node.js 22
 - pnpm 11.19.0
-- Docker Desktop 또는 Docker 호환 컨테이너 런타임
+- Supabase CLI 및 실제 Supabase 프로젝트 접근 권한
 - Git
 
 ## 환경변수
@@ -22,7 +22,7 @@
 `.env.example`을 `.env.local`로 복사하고 값을 입력한다. 비밀키가 포함된 `.env.local`은 커밋하지 않는다.
 
 ```dotenv
-NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
 INTERNAL_AUTH_EMAIL_DOMAIN=auth.fbkr.internal
@@ -37,12 +37,13 @@ BOOTSTRAP_COMPANY_EMAIL=
 
 ```powershell
 pnpm install --frozen-lockfile
-pnpm exec supabase start
-pnpm exec supabase db reset
+pnpm exec supabase login
+pnpm exec supabase link --project-ref <project-ref>
+pnpm db:push
 pnpm dev
 ```
 
-로컬 Supabase가 출력한 URL과 키를 `.env.local`에 설정한다. 포털은 `http://localhost:3000`, Supabase Studio는 기본적으로 `http://localhost:54323`에서 확인한다.
+Supabase Dashboard의 Project URL, publishable key, secret key를 `.env.local`에 설정한다. `db:push`는 실제 프로젝트에 마이그레이션을 적용하므로, 적용 전 Dashboard 백업·대상 프로젝트·변경 내용을 확인한다.
 
 ## 최초 시스템 관리자
 
@@ -61,22 +62,20 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
-pnpm exec supabase test db
 pnpm test:e2e
 ```
 
 - 단위 테스트와 빌드는 Supabase 비밀키 없이 실행할 수 있다.
-- 데이터베이스와 E2E 테스트는 로컬 Docker Supabase와 `.env.local`의 로컬 키가 필요하다.
-- E2E 테스트는 테스트 계정을 만들고 완료 후 제거한다. 공유 호스팅 프로젝트에서는 실행하지 않는다.
+- E2E 테스트는 실제 Supabase에 테스트 계정을 만들고 완료 후 제거한다. 운영 프로젝트에는 전용 테스트 계정과 별도 테스트 데이터를 사용한다.
 
 ## GitHub와 Vercel 운영
 
 1. 기능 브랜치는 `codex/` 또는 팀이 정한 접두사로 생성한다.
-2. Pull Request에서 CI의 린트, 타입 검사, 단위 테스트, 빌드, pgTAP을 통과시킨다.
+2. Pull Request에서 CI의 린트, 타입 검사, 단위 테스트, 빌드를 통과시킨다.
 3. 승인된 PR만 `main`에 병합하고 `main`을 Vercel Production에 연결한다.
 4. PR Preview는 Vercel 인증으로 보호한다.
 
-Preview와 Production은 승인된 정책에 따라 하나의 호스팅 Supabase 프로젝트를 공유한다. 따라서 Preview에서 실행한 생성·수정·삭제가 운영 데이터에 반영될 수 있다. Preview 배포 전 로컬 테스트와 CI를 반드시 통과시키고, 테스트 데이터는 로컬 Supabase에서만 생성한다.
+Preview와 Production은 승인된 정책에 따라 하나의 호스팅 Supabase 프로젝트를 공유할 수 있다. 따라서 Preview에서 실행한 생성·수정·삭제가 운영 데이터에 반영될 수 있다. E2E와 수동 검증은 운영 교육 이력과 분리된 테스트 계정·테스트 차수로만 수행한다.
 
 ## 제품 문서
 

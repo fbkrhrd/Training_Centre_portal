@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:db": "supabase test db",
+    "db:push": "supabase db push --linked",
     "test:e2e": "playwright test",
     "bootstrap:admin": "node --conditions react-server --import tsx scripts/bootstrap-admin.ts"
   },

@@ -92,7 +92,7 @@
 - [x] Next.js·TypeScript·테스트 기반 구성
 - [x] CI 디자인 토큰과 한·영 포털 셸
 - [ ] Supabase 사용자 스키마와 RLS
-  - 구현 완료, 로컬 Docker 환경 준비 후 pgTAP 실행 필요
+  - 구현 완료, 실제 Supabase 프로젝트 연결 후 마이그레이션 적용·권한 확인 필요
 - [x] Supabase 클라이언트와 사번 인증 매핑
 - [x] 로그인·로그아웃·비밀번호 변경·보호 라우팅
 - [x] 개별 계정 관리와 비활성화
@@ -101,4 +101,4 @@
 - [x] 보안 보강: service_role 최소 권한, 활성 상태 기반 RLS, 안전한 Excel 파서와 파일 크기·행·열 제한
 - [ ] 상태 확인 API, CI, E2E, 운영 문서
   - 상태 확인 API·CI·운영 문서와 E2E 시나리오 작성 완료
-  - 로컬 Docker 환경 준비 후 pgTAP·E2E 실행 필요
+  - 실제 Supabase 프로젝트 연결 후 E2E 실행 필요
