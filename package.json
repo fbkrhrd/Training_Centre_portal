@@ -13,7 +13,7 @@
     "test:watch": "vitest",
     "db:push": "supabase db push --linked",
     "test:e2e": "playwright test",
-    "bootstrap:admin": "node --conditions react-server --import tsx scripts/bootstrap-admin.ts"
+    "bootstrap:admin": "node --env-file=.env.local --conditions react-server --import tsx scripts/bootstrap-admin.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
