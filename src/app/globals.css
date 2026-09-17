@@ -82,6 +82,18 @@ a {
   gap: 18px;
 }
 
+.app-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.app-header__user {
+  color: var(--fbkr-ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
 .app-header__company {
   color: var(--fbkr-green-700);
   font-size: 0.82rem;
@@ -228,6 +240,132 @@ a {
   font-size: 2rem;
 }
 
+.button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.button--primary {
+  background: var(--fbkr-green-700);
+  color: var(--fbkr-paper);
+}
+
+.button--quiet {
+  min-height: 34px;
+  border-color: var(--fbkr-line);
+  background: var(--fbkr-paper);
+  color: var(--fbkr-ink);
+}
+
+.auth-page {
+  min-height: 100vh;
+  padding: 32px 18px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #f7fcfa, var(--fbkr-green-100));
+}
+
+.auth-panel {
+  width: min(100%, 440px);
+  padding: 0 38px 38px;
+  border: 1px solid var(--fbkr-line);
+  background: var(--fbkr-paper);
+  box-shadow: 0 18px 50px rgb(1 73 55 / 10%);
+}
+
+.auth-panel__brand-line {
+  height: 5px;
+  margin: 0 -38px 34px;
+  background: linear-gradient(90deg, var(--fbkr-green-700), var(--fbkr-green-300));
+}
+
+.auth-panel__company,
+.auth-panel__guide {
+  color: var(--fbkr-gray);
+}
+
+.auth-panel__company {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.auth-panel h1,
+.content-panel h1 {
+  margin: 0;
+  color: var(--fbkr-ink);
+}
+
+.auth-panel__guide {
+  margin: 12px 0 28px;
+  line-height: 1.5;
+}
+
+.auth-form {
+  display: grid;
+  gap: 18px;
+}
+
+.auth-form--compact {
+  max-width: 460px;
+  margin-top: 28px;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 8px;
+  color: var(--fbkr-ink);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.auth-form input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--fbkr-line);
+  border-radius: 0;
+  color: var(--fbkr-ink);
+  font-size: 1rem;
+}
+
+.auth-form input:focus {
+  border-color: var(--fbkr-green-600);
+  outline: 2px solid var(--fbkr-green-100);
+}
+
+.form-message {
+  margin: 0;
+  font-size: 0.84rem;
+}
+
+.form-message--error {
+  color: var(--fbkr-red);
+}
+
+.form-message--success {
+  color: var(--fbkr-green-700);
+}
+
+.auth-panel__locale {
+  margin-top: 26px;
+  justify-content: center;
+}
+
+.content-panel {
+  max-width: 760px;
+}
+
 @media (max-width: 760px) {
   .app-header {
     min-height: 78px;
@@ -236,6 +374,10 @@ a {
 
   .app-header__company,
   .app-header__eyebrow {
+    display: none;
+  }
+
+  .app-header__user {
     display: none;
   }
 

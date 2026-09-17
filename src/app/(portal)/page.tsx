@@ -1,18 +1,12 @@
-import { AppShell } from "@/components/shell/app-shell";
+import { requireUser } from "@/features/auth/require-user";
 import { getDictionary } from "@/i18n/dictionaries";
-import { normalizeLocale } from "@/i18n/locale";
 
-type HomeProps = {
-  searchParams: Promise<{ lang?: string }>;
-};
-
-export default async function Home({ searchParams }: HomeProps) {
-  const { lang } = await searchParams;
-  const locale = normalizeLocale(lang);
-  const dictionary = getDictionary(locale);
+export default async function PortalHomePage() {
+  const user = await requireUser();
+  const dictionary = getDictionary(user.preferredLocale);
 
   return (
-    <AppShell locale={locale} role="participant">
+    <>
       <section className="dashboard-intro">
         <p className="dashboard-intro__label">LEARNING CENTRE</p>
         <h1>{dictionary.welcomeTitle}</h1>
@@ -32,6 +26,6 @@ export default async function Home({ searchParams }: HomeProps) {
           <strong>0</strong>
         </article>
       </section>
-    </AppShell>
+    </>
   );
 }

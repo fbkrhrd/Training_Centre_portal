@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Dictionary } from "@/i18n/dictionaries";
-
-export type AppRole = "system_admin" | "education_manager" | "participant";
+import type { AppRole } from "@/features/auth/types";
 
 type AppSidebarProps = {
   dictionary: Dictionary;
@@ -25,6 +24,10 @@ export function AppSidebar({ dictionary, role }: AppSidebarProps) {
             {dictionary.users}
           </Link>
         ) : null}
+        <Link className="app-sidebar__link" href="/account/password">
+          <span className="app-sidebar__mark" aria-hidden="true" />
+          {dictionary.account}
+        </Link>
       </nav>
     </aside>
   );

@@ -1,22 +1,36 @@
 import type { ReactNode } from "react";
+import type { AppRole } from "@/features/auth/types";
 import { getDictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/locale";
 import { AppHeader } from "./app-header";
-import { AppSidebar, type AppRole } from "./app-sidebar";
+import { AppSidebar } from "./app-sidebar";
 
 type AppShellProps = {
   children: ReactNode;
   locale: Locale;
   role: AppRole;
+  userName?: string;
+  signOutAction?: () => Promise<void>;
 };
 
-export function AppShell({ children, locale, role }: AppShellProps) {
+export function AppShell({
+  children,
+  locale,
+  role,
+  userName,
+  signOutAction,
+}: AppShellProps) {
   const dictionary = getDictionary(locale);
 
   return (
     <div className="app-shell">
       <div className="app-shell__brand-line" aria-hidden="true" />
-      <AppHeader dictionary={dictionary} locale={locale} />
+      <AppHeader
+        dictionary={dictionary}
+        locale={locale}
+        userName={userName}
+        signOutAction={signOutAction}
+      />
       <div className="app-shell__body">
         <AppSidebar dictionary={dictionary} role={role} />
         <main className="app-shell__content">{children}</main>
