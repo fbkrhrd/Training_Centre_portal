@@ -11,6 +11,7 @@ type AppShellProps = {
   role: AppRole;
   userName?: string;
   signOutAction?: () => Promise<void>;
+  updateLocaleAction?: (formData: FormData) => Promise<void>;
 };
 
 export function AppShell({
@@ -19,6 +20,7 @@ export function AppShell({
   role,
   userName,
   signOutAction,
+  updateLocaleAction,
 }: AppShellProps) {
   const dictionary = getDictionary(locale);
 
@@ -30,6 +32,7 @@ export function AppShell({
         locale={locale}
         userName={userName}
         signOutAction={signOutAction}
+        updateLocaleAction={updateLocaleAction}
       />
       <div className="app-shell__body">
         <AppSidebar dictionary={dictionary} role={role} />

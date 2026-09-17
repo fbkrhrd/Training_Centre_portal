@@ -1,11 +1,14 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getServerEnv } from "@/lib/server-env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { authenticateEmployee } from "./auth-service";
 import type { AuthActionState } from "./action-state";
+import { requireUser } from "./require-user";
+import { updatePreferredLocale } from "./preference-service";
 
 const loginSchema = z.object({
   employeeNo: z.string().trim().min(1),
@@ -53,6 +56,27 @@ export async function logoutAction() {
   const supabase = await createServerSupabaseClient();
   await supabase.auth.signOut();
   redirect("/login");
+}
+
+export async function updateLocaleAction(formData: FormData) {
+  const user = await requireUser();
+  const supabase = await createServerSupabaseClient();
+
+  await updatePreferredLocale(
+    {
+      async saveLocale(userId, locale) {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ preferred_locale: locale })
+          .eq("id", userId);
+        if (error) throw error;
+      },
+    },
+    user.id,
+    formData.get("locale"),
+  );
+
+  revalidatePath("/", "layout");
 }
 
 export async function changePasswordAction(

@@ -1,5 +1,5 @@
 begin;
-select plan(10);
+select plan(14);
 
 select has_table('public', 'departments', 'departments exists');
 select has_table('public', 'profiles', 'profiles exists');
@@ -43,6 +43,20 @@ select is(
   true,
   'profiles has RLS enabled'
 );
+select table_privs_are(
+  'service_role',
+  'public',
+  'departments',
+  array['INSERT', 'SELECT', 'UPDATE']
+);
+select table_privs_are(
+  'service_role',
+  'public',
+  'profiles',
+  array['INSERT', 'SELECT', 'UPDATE']
+);
+select has_function('private', 'current_user_is_active', array[]::text[]);
+select has_function('private', 'current_user_is_staff', array[]::text[]);
 
 select * from finish();
 rollback;

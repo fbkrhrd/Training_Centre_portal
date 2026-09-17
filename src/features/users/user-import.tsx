@@ -7,6 +7,7 @@ import { initialUserImportState } from "./import-state";
 
 export function UserImport({ dictionary }: { dictionary: Dictionary }) {
   const [file, setFile] = useState<File | null>(null);
+  const [previewedFile, setPreviewedFile] = useState<File | null>(null);
   const [state, dispatch, pending] = useActionState(
     userImportAction,
     initialUserImportState,
@@ -20,6 +21,7 @@ export function UserImport({ dictionary }: { dictionary: Dictionary }) {
 
   function submit(intent: "preview" | "import") {
     if (!file) return;
+    if (intent === "preview") setPreviewedFile(file);
     const formData = new FormData();
     formData.set("file", file);
     formData.set("intent", intent);
@@ -35,7 +37,10 @@ export function UserImport({ dictionary }: { dictionary: Dictionary }) {
       <input
         type="file"
         accept=".csv,.xlsx"
-        onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+        onChange={(event) => {
+          setFile(event.target.files?.[0] ?? null);
+          setPreviewedFile(null);
+        }}
       />
       <div className="button-row">
         <button
@@ -49,7 +54,7 @@ export function UserImport({ dictionary }: { dictionary: Dictionary }) {
         <button
           className="button button--primary"
           type="button"
-          disabled={!file || pending || state.status !== "ready"}
+          disabled={!file || file !== previewedFile || pending || state.status !== "ready"}
           onClick={() => submit("import")}
         >
           {dictionary.confirmImport}

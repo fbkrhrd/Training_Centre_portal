@@ -1,6 +1,6 @@
 import type { AppRole } from "@/features/auth/types";
 import { employeeNoToAuthEmail } from "@/features/auth/auth-email";
-import type { UserInput } from "./user-schema";
+import type { UserInput, UserProfileInput } from "./user-schema";
 
 type EmploymentStatus = "active" | "inactive";
 
@@ -20,6 +20,7 @@ export type AccountDependencies = {
     userId: string,
     change: { banDuration: string } | { role: AppRole },
   ): Promise<void>;
+  updateProfile(userId: string, input: UserProfileInput): Promise<void>;
 };
 
 function assertManager(role: AppRole) {
@@ -94,4 +95,18 @@ export async function updateUserRole(
     throw new Error("역할 변경은 시스템 관리자만 할 수 있습니다.");
   }
   await dependencies.updateAuthUser(userId, { role });
+}
+
+export async function updateUserProfile(
+  dependencies: AccountDependencies,
+  actorRole: AppRole,
+  targetRole: AppRole,
+  userId: string,
+  input: UserProfileInput,
+) {
+  assertManager(actorRole);
+  if (actorRole === "education_manager" && targetRole !== "participant") {
+    throw new Error("교육담당자는 참가자 계정만 관리할 수 있습니다.");
+  }
+  await dependencies.updateProfile(userId, input);
 }

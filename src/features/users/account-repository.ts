@@ -54,5 +54,21 @@ export function createAccountDependencies(): AccountDependencies {
       );
       if (error) throw error;
     },
+    async updateProfile(userId, input) {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: input.fullName,
+          department_id: input.departmentId ?? null,
+          company_email: input.companyEmail,
+          grade: input.grade ?? null,
+          job_title: input.jobTitle ?? null,
+          mobile_phone: input.mobilePhone ?? null,
+          hired_on: input.hiredOn ?? null,
+          preferred_locale: input.preferredLocale,
+        })
+        .eq("id", userId);
+      if (error) throw error;
+    },
   };
 }

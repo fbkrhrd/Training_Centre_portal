@@ -47,7 +47,7 @@ export async function userImportAction(
   const departmentIdsByName = new Map(
     (departments ?? []).map((department) => [department.name, department.id]),
   );
-  const preview = parseUserWorkbook(
+  const preview = await parseUserWorkbook(
     new Uint8Array(await file.arrayBuffer()),
     extension,
     { departmentIdsByName },

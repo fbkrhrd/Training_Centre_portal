@@ -32,3 +32,11 @@ export const userInputSchema = z.object({
 });
 
 export type UserInput = z.infer<typeof userInputSchema>;
+
+export const userProfileInputSchema = userInputSchema.omit({
+  employeeNo: true,
+  employmentStatus: true,
+  role: true,
+});
+
+export type UserProfileInput = z.infer<typeof userProfileInputSchema>;

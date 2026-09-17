@@ -8,10 +8,11 @@ import {
   deactivateUserAccount,
   reactivateUserAccount,
   updateUserRole,
+  updateUserProfile,
 } from "./account-service";
 import { createAccountDependencies } from "./account-repository";
 import type { UserActionState } from "./action-state";
-import { userInputSchema } from "./user-schema";
+import { userInputSchema, userProfileInputSchema } from "./user-schema";
 import { isAppRole } from "@/features/auth/types";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
@@ -80,4 +81,34 @@ export async function updateUserRoleAction(formData: FormData) {
   if (!userId || !isAppRole(role)) return;
   await updateUserRole(createAccountDependencies(), actor.role, userId, role);
   revalidatePath("/admin/users");
+}
+
+export async function updateUserProfileAction(
+  _previousState: UserActionState,
+  formData: FormData,
+): Promise<UserActionState> {
+  const actor = await requireUser(managers);
+  const userId = String(formData.get("userId") ?? "");
+  const parsed = userProfileInputSchema.safeParse(Object.fromEntries(formData));
+  if (!userId || !parsed.success) {
+    return { status: "error", message: parsed.success ? "사용자를 찾을 수 없습니다." : parsed.error.issues[0]?.message };
+  }
+
+  try {
+    const { data, error } = await createAdminSupabaseClient().auth.admin.getUserById(userId);
+    const targetRole = data.user?.app_metadata.role;
+    if (error || !isAppRole(targetRole)) throw error ?? new Error("역할을 확인할 수 없습니다.");
+    await updateUserProfile(
+      createAccountDependencies(),
+      actor.role,
+      targetRole,
+      userId,
+      parsed.data,
+    );
+    revalidatePath("/admin/users");
+    revalidatePath(`/admin/users/${userId}`);
+    return { status: "success", message: "사용자 정보를 저장했습니다." };
+  } catch (error) {
+    return { status: "error", message: error instanceof Error ? error.message : "사용자 정보를 저장하지 못했습니다." };
+  }
 }

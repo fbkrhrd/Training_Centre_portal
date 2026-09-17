@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/locale";
 
@@ -7,6 +6,7 @@ type AppHeaderProps = {
   locale: Locale;
   userName?: string;
   signOutAction?: () => Promise<void>;
+  updateLocaleAction?: (formData: FormData) => Promise<void>;
 };
 
 export function AppHeader({
@@ -14,6 +14,7 @@ export function AppHeader({
   locale,
   userName,
   signOutAction,
+  updateLocaleAction,
 }: AppHeaderProps) {
   return (
     <header className="app-header">
@@ -28,21 +29,19 @@ export function AppHeader({
       </div>
       <div className="app-header__actions">
         <nav className="locale-switch" aria-label={dictionary.language}>
-          <Link
-            href="?lang=ko"
-            hrefLang="ko"
-            aria-current={locale === "ko" ? "page" : undefined}
-          >
-            {dictionary.korean}
-          </Link>
+          <form action={updateLocaleAction}>
+            <input type="hidden" name="locale" value="ko" />
+            <button aria-current={locale === "ko" ? "page" : undefined}>
+              {dictionary.korean}
+            </button>
+          </form>
           <span aria-hidden="true">/</span>
-          <Link
-            href="?lang=en"
-            hrefLang="en"
-            aria-current={locale === "en" ? "page" : undefined}
-          >
-            {dictionary.english}
-          </Link>
+          <form action={updateLocaleAction}>
+            <input type="hidden" name="locale" value="en" />
+            <button aria-current={locale === "en" ? "page" : undefined}>
+              {dictionary.english}
+            </button>
+          </form>
         </nav>
         {userName ? <span className="app-header__user">{userName}</span> : null}
         {signOutAction ? (

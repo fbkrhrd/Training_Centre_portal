@@ -1,4 +1,5 @@
-import * as XLSX from "xlsx";
+import { Readable } from "node:stream";
+import ExcelJS from "exceljs";
 import type { AppRole } from "@/features/auth/types";
 import { userInputSchema, type UserInput } from "./user-schema";
 
@@ -41,9 +42,9 @@ function text(value: unknown) {
 
 function parseStatus(value: unknown) {
   const normalized = text(value).toLowerCase();
-  return normalized === "비활성" || normalized === "inactive"
-    ? "inactive"
-    : "active";
+  if (!normalized || ["재직", "활성", "active"].includes(normalized)) return "active";
+  if (["비활성", "inactive"].includes(normalized)) return "inactive";
+  return normalized;
 }
 
 function parseRole(value: unknown): AppRole | string {
@@ -61,11 +62,11 @@ function parseRole(value: unknown): AppRole | string {
   return roles[normalized] ?? normalized;
 }
 
-export function parseUserWorkbook(
+export async function parseUserWorkbook(
   buffer: Buffer | Uint8Array,
   extension: string,
   options: ParseOptions = {},
-): UserImportPreview {
+): Promise<UserImportPreview> {
   if (!new Set([".csv", ".xlsx"]).has(extension.toLowerCase())) {
     return {
       validRows: [],
@@ -75,15 +76,13 @@ export function parseUserWorkbook(
     };
   }
 
-  const workbook =
-    extension.toLowerCase() === ".csv"
-      ? XLSX.read(new TextDecoder("utf-8").decode(buffer), {
-          type: "string",
-          raw: false,
-        })
-      : XLSX.read(buffer, { type: "buffer", raw: false });
-  const firstSheet = workbook.SheetNames[0];
-  const sheet = firstSheet ? workbook.Sheets[firstSheet] : undefined;
+  const workbook = new ExcelJS.Workbook();
+  if (extension.toLowerCase() === ".csv") {
+    await workbook.csv.read(Readable.from([Buffer.from(buffer)]));
+  } else {
+    await workbook.xlsx.load(Buffer.from(buffer) as never);
+  }
+  const sheet = workbook.worksheets[0];
   if (!sheet) {
     return {
       validRows: [],
@@ -93,14 +92,17 @@ export function parseUserWorkbook(
     };
   }
 
-  const rows = XLSX.utils.sheet_to_json<ImportRow>(sheet, {
-    defval: "",
-    raw: false,
-  });
-  const actualHeaders = XLSX.utils.sheet_to_json<string[]>(sheet, {
-    header: 1,
-    blankrows: false,
-  })[0]?.map((value) => text(value).replace(/^\uFEFF/, ""));
+  if (sheet.rowCount > 5001 || sheet.columnCount > headers.length + 10) {
+    return {
+      validRows: [],
+      errors: [{ rowNumber: 1, field: "file", message: "최대 5,000행과 21열까지 허용됩니다." }],
+      sourceEmployeeNumbers: {},
+      sourceRowNumbers: {},
+    };
+  }
+  const actualHeaders = (sheet.getRow(1).values as unknown[])
+    .slice(1)
+    .map((value) => text(value).replace(/^\uFEFF/, ""));
   const missingHeaders = headers.filter((header) => !actualHeaders?.includes(header));
   if (missingHeaders.length) {
     return {
@@ -120,6 +122,14 @@ export function parseUserWorkbook(
   const employeeNumbers = new Set<string>();
   const sourceEmployeeNumbers: Record<string, string> = {};
   const sourceRowNumbers: Record<string, number> = {};
+
+  const rows: ImportRow[] = [];
+  sheet.eachRow((worksheetRow, rowNumber) => {
+    if (rowNumber === 1) return;
+    const row = Object.fromEntries(headers.map((header, index) => [header, worksheetRow.getCell(index + 1).text])) as ImportRow;
+    if (headers.every((header) => !text(row[header]))) return;
+    rows.push(row);
+  });
 
   rows.forEach((row, index) => {
     const rowNumber = index + 2;

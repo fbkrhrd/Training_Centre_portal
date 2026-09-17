@@ -3,6 +3,7 @@ import {
   createUserAccount,
   deactivateUserAccount,
   updateUserRole,
+  updateUserProfile,
 } from "./account-service";
 
 const input = {
@@ -22,6 +23,7 @@ describe("account service", () => {
       insertProfile: vi.fn(),
       updateProfileStatus: vi.fn(),
       updateAuthUser: vi.fn(),
+      updateProfile: vi.fn(),
     };
 
     await expect(
@@ -44,6 +46,7 @@ describe("account service", () => {
       insertProfile: vi.fn().mockRejectedValue(new Error("profile failed")),
       updateProfileStatus: vi.fn(),
       updateAuthUser: vi.fn(),
+      updateProfile: vi.fn(),
     };
 
     await expect(
@@ -65,6 +68,7 @@ describe("account service", () => {
       insertProfile: vi.fn(),
       updateProfileStatus: vi.fn().mockResolvedValue(undefined),
       updateAuthUser: vi.fn().mockResolvedValue(undefined),
+      updateProfile: vi.fn(),
     };
 
     await deactivateUserAccount(dependencies, "education_manager", "user-1");
@@ -87,6 +91,7 @@ describe("account service", () => {
       insertProfile: vi.fn(),
       updateProfileStatus: vi.fn(),
       updateAuthUser,
+      updateProfile: vi.fn(),
     };
 
     await updateUserRole(
@@ -99,5 +104,32 @@ describe("account service", () => {
     expect(updateAuthUser).toHaveBeenCalledWith("user-1", {
       role: "education_manager",
     });
+  });
+
+  it("lets an education manager update participant profile fields", async () => {
+    const updateProfile = vi.fn().mockResolvedValue(undefined);
+    const dependencies = {
+      createAuthUser: vi.fn(),
+      deleteAuthUser: vi.fn(),
+      insertProfile: vi.fn(),
+      updateProfileStatus: vi.fn(),
+      updateAuthUser: vi.fn(),
+      updateProfile,
+    };
+    const profile = {
+      fullName: "홍길순",
+      companyEmail: "gilsoon@example.com",
+      preferredLocale: "en" as const,
+    };
+
+    await updateUserProfile(
+      dependencies,
+      "education_manager",
+      "participant",
+      "user-1",
+      profile,
+    );
+
+    expect(updateProfile).toHaveBeenCalledWith("user-1", profile);
   });
 });
