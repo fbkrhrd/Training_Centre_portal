@@ -1,5 +1,20 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const requiredEnvironment = [
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+  "SUPABASE_SECRET_KEY",
+] as const;
+const missingEnvironment = requiredEnvironment.filter(
+  (name) => !process.env[name],
+);
+
+if (missingEnvironment.length) {
+  throw new Error(
+    `E2E tests require local Supabase environment variables: ${missingEnvironment.join(", ")}`,
+  );
+}
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,

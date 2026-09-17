@@ -3,6 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getPublicEnv } from "@/lib/env";
 
 export async function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname === "/api/health") {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
   const env = getPublicEnv();
   const supabase = createServerClient(
