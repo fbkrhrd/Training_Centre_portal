@@ -18,3 +18,11 @@ export function assertManagerEnrollmentAction(
   }
   return target;
 }
+
+export function canCancelEnrollment(
+  actor: "participant" | "manager",
+  cancellationDeadline: Date,
+  now: Date,
+) {
+  return actor === "manager" || now <= cancellationDeadline;
+}

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/features/auth/require-user";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { initialEnrollmentStatus } from "./enrollment-service";
-import { assertManagerEnrollmentAction } from "./enrollment-service";
+import { assertManagerEnrollmentAction, canCancelEnrollment } from "./enrollment-service";
 
 export async function applyForSessionAction(formData: FormData) {
   const user = await requireUser(["participant", "education_manager", "system_admin"]);
@@ -39,4 +39,26 @@ export async function decideEnrollmentAction(formData: FormData) {
   const { error: updateError } = await supabase.from("enrollments").update({ status, decided_at: new Date().toISOString(), decided_by: user.id }).eq("id", enrollmentId);
   if (updateError) throw updateError;
   revalidatePath("/admin/enrollments"); revalidatePath("/my-learning");
+}
+
+export async function cancelEnrollmentAction(formData: FormData) {
+  const user = await requireUser();
+  const enrollmentId = String(formData.get("enrollmentId") ?? "");
+  if (!enrollmentId) throw new Error("신청 정보를 찾을 수 없습니다.");
+  const supabase = createAdminSupabaseClient();
+  const { data: enrollment } = await supabase.from("enrollments").select("id,participant_id,status,session_id").eq("id", enrollmentId).single();
+  if (!enrollment || enrollment.status === "cancelled") throw new Error("취소할 수 없는 신청입니다.");
+  const { data: session } = await supabase.from("course_sessions").select("course_id,cancellation_closes_at").eq("id", enrollment.session_id).single();
+  if (!session) throw new Error("차수를 찾을 수 없습니다.");
+  const isParticipant = enrollment.participant_id === user.id;
+  let isManager = user.role === "system_admin";
+  if (!isParticipant && !isManager && user.role === "education_manager") {
+    const { data } = await supabase.from("course_managers").select("course_id").eq("course_id", session.course_id).eq("manager_id", user.id).maybeSingle();
+    isManager = Boolean(data);
+  }
+  if (!isParticipant && !isManager) throw new Error("취소 권한이 없습니다.");
+  if (!canCancelEnrollment(isManager ? "manager" : "participant", new Date(session.cancellation_closes_at), new Date())) throw new Error("취소 기한이 지났습니다. 교육담당자에게 문의해 주세요.");
+  const { error } = await supabase.from("enrollments").update({ status: "cancelled", cancellation_reason: isManager ? "교육담당자 취소" : "참가자 취소" }).eq("id", enrollmentId);
+  if (error) throw error;
+  revalidatePath("/my-learning"); revalidatePath("/admin/enrollments");
 }
