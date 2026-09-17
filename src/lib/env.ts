@@ -13,12 +13,20 @@ const serverSchema = publicSchema.extend({
     .default("auth.fbkr.internal"),
 });
 
+const authSchema = z.object({
+  INTERNAL_AUTH_EMAIL_DOMAIN: z.string().min(1).default("auth.fbkr.internal"),
+});
+
 export function parsePublicEnv(input: Record<string, string | undefined>) {
   return publicSchema.parse(input);
 }
 
 export function parseServerEnv(input: Record<string, string | undefined>) {
   return serverSchema.parse(input);
+}
+
+export function parseAuthEnv(input: Record<string, string | undefined>) {
+  return authSchema.parse(input);
 }
 
 export function getPublicEnv() {

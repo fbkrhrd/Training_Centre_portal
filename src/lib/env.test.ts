@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePublicEnv, parseServerEnv } from "@/lib/env";
+import { parseAuthEnv, parsePublicEnv, parseServerEnv } from "@/lib/env";
 
 describe("parsePublicEnv", () => {
   it("rejects a missing Supabase URL", () => {
@@ -27,5 +27,11 @@ describe("parseServerEnv", () => {
         NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test",
       }),
     ).toThrow("SUPABASE_SECRET_KEY");
+  });
+});
+
+describe("parseAuthEnv", () => {
+  it("does not require a server secret for employee password login", () => {
+    expect(parseAuthEnv({}).INTERNAL_AUTH_EMAIL_DOMAIN).toBe("auth.fbkr.internal");
   });
 });

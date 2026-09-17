@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getServerEnv } from "@/lib/server-env";
+import { getAuthEnv } from "@/lib/server-env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { authenticateEmployee } from "./auth-service";
 import type { AuthActionState } from "./action-state";
@@ -36,7 +36,7 @@ export async function loginAction(
 
   try {
     const supabase = await createServerSupabaseClient();
-    const env = getServerEnv();
+    const env = getAuthEnv();
     await authenticateEmployee(
       supabase.auth,
       parsed.data,
