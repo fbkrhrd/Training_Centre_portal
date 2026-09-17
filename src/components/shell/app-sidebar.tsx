@@ -18,6 +18,8 @@ export function AppSidebar({ dictionary, role }: AppSidebarProps) {
           <span className="app-sidebar__mark" aria-hidden="true" />
           {dictionary.dashboard}
         </Link>
+        <Link className="app-sidebar__link" href="/courses"><span className="app-sidebar__mark" aria-hidden="true" />교육과정</Link>
+        <Link className="app-sidebar__link" href="/my-learning"><span className="app-sidebar__mark" aria-hidden="true" />나의 신청 현황</Link>
         {canManageUsers ? (
           <Link className="app-sidebar__link" href="/admin/users">
             <span className="app-sidebar__mark" aria-hidden="true" />
