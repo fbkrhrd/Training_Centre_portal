@@ -7,6 +7,7 @@ import {
   updateUserRoleAction,
 } from "@/features/users/actions";
 import type { AppRole } from "@/features/auth/types";
+import Link from "next/link";
 
 const managers = ["system_admin", "education_manager"] as const;
 
@@ -35,6 +36,9 @@ export default async function UsersPage() {
         <p className="dashboard-intro__label">ADMINISTRATION</p>
         <h1>{dictionary.usersTitle}</h1>
         <p>{dictionary.usersDescription}</p>
+        <Link className="button button--quiet inline-button" href="/admin/users/import">
+          {dictionary.importUsers}
+        </Link>
       </header>
       <section className="content-card">
         <h2>{dictionary.addUser}</h2>
