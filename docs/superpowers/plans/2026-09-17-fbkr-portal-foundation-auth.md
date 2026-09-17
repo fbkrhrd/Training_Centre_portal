@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Use `차수`, never `기수`, in application copy, identifiers, comments, and documentation.
+- Use `차수` consistently in application copy, identifiers, comments, and documentation.
 - Service name is `FBKR Learning Centre Portal`.
 - Support Korean and English; save the user's language preference.
 - Use Arial for all interface text.
