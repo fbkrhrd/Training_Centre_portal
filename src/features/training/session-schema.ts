@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const dateTime = z.iso.datetime();
+const dateTime = z.string().refine((value) => !Number.isNaN(Date.parse(value)), "유효한 일시를 입력해 주세요.").transform((value) => new Date(value).toISOString());
 
 export const sessionInputSchema = z
   .object({

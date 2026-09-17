@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/features/auth/require-user";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { courseInputSchema } from "./course-schema";
+import { sessionInputSchema } from "./session-schema";
+import { assertCourseManagementAccess } from "./course-service";
 
 const managers = ["system_admin", "education_manager"] as const;
 
@@ -31,4 +33,24 @@ export async function createCourseAction(formData: FormData) {
   });
   if (managerError) throw managerError;
   revalidatePath("/admin/courses");
+}
+
+export async function createSessionAction(formData: FormData) {
+  const user = await requireUser(managers);
+  const input = sessionInputSchema.parse(Object.fromEntries(formData));
+  const supabase = createAdminSupabaseClient();
+  await assertCourseManagementAccess({
+    async isAssignedManager(courseId, userId) {
+      const { data } = await supabase.from("course_managers").select("course_id").eq("course_id", courseId).eq("manager_id", userId).maybeSingle();
+      return Boolean(data);
+    },
+  }, user.role, input.courseId, user.id);
+  const { error } = await supabase.from("course_sessions").insert({
+    course_id: input.courseId, session_no: input.sessionNo, status: "draft", delivery_mode: input.deliveryMode,
+    location: input.location ?? null, online_url: input.onlineUrl ?? null, starts_at: input.startsAt, ends_at: input.endsAt,
+    capacity: input.capacity, application_opens_at: input.applicationOpensAt, application_closes_at: input.applicationClosesAt,
+    cancellation_closes_at: input.cancellationClosesAt,
+  });
+  if (error) throw error;
+  revalidatePath("/admin/sessions");
 }
