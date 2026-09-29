@@ -77,6 +77,10 @@ pnpm test:e2e
 
 Preview와 Production은 승인된 정책에 따라 하나의 호스팅 Supabase 프로젝트를 공유할 수 있다. 따라서 Preview에서 실행한 생성·수정·삭제가 운영 데이터에 반영될 수 있다. E2E와 수동 검증은 운영 교육 이력과 분리된 테스트 계정·테스트 차수로만 수행한다.
 
+### Production 점검
+
+Vercel 환경 변수는 이름만 등록해도 충분하지 않다. SUPABASE_SECRET_KEY에는 비어 있지 않은 Secret Key를 Production과 Preview에 모두 설정하고 재배포한다. 배포 후 상태 점검, 로그인, 홈, 교육과정, 나의 신청, 과정·차수·신청 승인·사용자 관리 화면을 확인한다.
+
 ## 제품 문서
 
 - [단계별 PRD](./docs/prd/README.md)
