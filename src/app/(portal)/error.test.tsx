@@ -14,7 +14,7 @@ describe("PortalError", () => {
     );
 
     expect(
-      screen.getByText("데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."),
+      screen.getByText("표시할 데이터가 없습니다"),
     ).toBeInTheDocument();
     expect(screen.queryByText("SUPABASE_SECRET_KEY=leak")).not.toBeInTheDocument();
 
