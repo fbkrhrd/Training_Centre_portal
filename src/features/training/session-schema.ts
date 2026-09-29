@@ -12,7 +12,10 @@ export const sessionInputSchema = z
     sessionNo: z.coerce.number().int().positive(),
     deliveryMode: z.enum(["in_person", "online", "blended"]),
     location: z.string().trim().max(300).optional(),
-    onlineUrl: z.url().optional(),
+    onlineUrl: z.preprocess(
+      (value) => typeof value === "string" && value.trim() === "" ? undefined : value,
+      z.url().optional(),
+    ),
     startsAt: dateTime,
     endsAt: dateTime,
     capacity: z.coerce.number().int().positive(),

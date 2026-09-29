@@ -31,6 +31,22 @@ describe("sessionInputSchema", () => {
     })).toThrow("온라인 접속 링크");
   });
 
+  it("accepts an empty online link for in-person delivery", () => {
+    expect(sessionInputSchema.parse({
+      courseId: "00000000-0000-4000-8000-000000000001",
+      sessionNo: 1,
+      deliveryMode: "in_person",
+      location: "서울",
+      onlineUrl: "",
+      startsAt: "2026-10-01T09:00",
+      endsAt: "2026-10-01T10:00",
+      capacity: 20,
+      applicationOpensAt: "2026-09-01T09:00",
+      applicationClosesAt: "2026-09-30T09:00",
+      cancellationClosesAt: "2026-09-30T09:00",
+    }).onlineUrl).toBeUndefined();
+  });
+
   it("rejects a session that ends before it starts", () => {
     expect(() => sessionInputSchema.parse({
       courseId: "00000000-0000-4000-8000-000000000001",
