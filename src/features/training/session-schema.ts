@@ -1,6 +1,10 @@
 import { z } from "zod";
+import { toKstIso } from "@/lib/kst-date-time";
 
-const dateTime = z.string().refine((value) => !Number.isNaN(Date.parse(value)), "유효한 일시를 입력해 주세요.").transform((value) => new Date(value).toISOString());
+const dateTime = z
+  .string()
+  .refine((value) => !Number.isNaN(Date.parse(value + "+09:00")), "유효한 일시를 입력해 주세요.")
+  .transform(toKstIso);
 
 export const sessionInputSchema = z
   .object({

@@ -2,6 +2,21 @@ import { describe, expect, it } from "vitest";
 import { sessionInputSchema } from "./session-schema";
 
 describe("sessionInputSchema", () => {
+  it("normalizes a datetime-local session start as a KST instant", () => {
+    expect(sessionInputSchema.parse({
+      courseId: "00000000-0000-4000-8000-000000000001",
+      sessionNo: 1,
+      deliveryMode: "in_person",
+      location: "서울",
+      startsAt: "2026-10-01T09:00",
+      endsAt: "2026-10-01T10:00",
+      capacity: 20,
+      applicationOpensAt: "2026-09-01T09:00",
+      applicationClosesAt: "2026-09-30T09:00",
+      cancellationClosesAt: "2026-09-30T09:00",
+    }).startsAt).toBe("2026-10-01T00:00:00.000Z");
+  });
+
   it("requires an online link for online delivery", () => {
     expect(() => sessionInputSchema.parse({
       courseId: "00000000-0000-4000-8000-000000000001",

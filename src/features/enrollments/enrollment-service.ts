@@ -24,5 +24,6 @@ export function canCancelEnrollment(
   cancellationDeadline: Date,
   now: Date,
 ) {
-  return actor === "manager" || now <= cancellationDeadline;
+  return actor === "manager" || isDeadlineOpen(cancellationDeadline, now);
 }
+import { isDeadlineOpen } from "@/lib/kst-date-time";
