@@ -259,6 +259,19 @@ a {
   font-size: 2rem;
 }
 
+.course-name {
+  display: block;
+  font-weight: 700;
+}
+
+.course-description {
+  margin: 6px 0 0;
+  color: var(--fbkr-gray);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
 .button {
   min-height: 40px;
   padding: 0 16px;
