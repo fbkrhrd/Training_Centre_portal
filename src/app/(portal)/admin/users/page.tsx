@@ -1,4 +1,5 @@
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { requireSupabaseData } from "@/lib/data-access";
 import { requireUser } from "@/features/auth/require-user";
 import { getDictionary } from "@/i18n/dictionaries";
 import { UserForm } from "@/features/users/user-form";
@@ -25,7 +26,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
   const filters = parseUserListFilters(await searchParams);
   const dictionary = getDictionary(actor.preferredLocale);
   const supabase = createAdminSupabaseClient();
-  const [{ data: profiles }, { data: departments }, authResult] = await Promise.all([
+  const [profilesResult, departmentsResult, authResult] = await Promise.all([
     supabase
       .from("profiles")
       .select("id,employee_no,full_name,company_email,employment_status,department_id")
@@ -33,13 +34,19 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
     supabase.from("departments").select("id,name").eq("is_active", true).order("name"),
     supabase.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ]);
+  const profiles = requireSupabaseData(profilesResult, "사용자 목록") ?? [];
+  const departments = requireSupabaseData(departmentsResult, "부서 목록") ?? [];
+  const authUsers = requireSupabaseData(
+    { data: authResult.data.users, error: authResult.error },
+    "사용자 권한 목록",
+  );
   const roleByUserId = new Map(
-    authResult.data.users.map((user) => [user.id, user.app_metadata.role as AppRole]),
+    authUsers.map((user) => [user.id, user.app_metadata.role as AppRole]),
   );
   const departmentById = new Map(
-    (departments ?? []).map((department) => [department.id, department.name]),
+    departments.map((department) => [department.id, department.name]),
   );
-  const userRows = (profiles ?? []).map((profile) => ({
+  const userRows = profiles.map((profile) => ({
     profile,
     id: profile.id,
     employeeNo: profile.employee_no,
@@ -68,7 +75,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
       <section className="content-card">
         <h2>{dictionary.addUser}</h2>
         <UserForm
-          departments={departments ?? []}
+          departments={departments}
           actorRole={actor.role}
           dictionary={dictionary}
         />
