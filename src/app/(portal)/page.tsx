@@ -1,9 +1,16 @@
 import { requireUser } from "@/features/auth/require-user";
 import { getDictionary } from "@/i18n/dictionaries";
+import { getDashboardSummary } from "@/features/dashboard/dashboard-service";
+import { loadDashboardSource } from "@/features/dashboard/dashboard-repository";
 
 export default async function PortalHomePage() {
   const user = await requireUser();
   const dictionary = getDictionary(user.preferredLocale);
+  const summary = getDashboardSummary(
+    await loadDashboardSource({ id: user.id, role: user.role }),
+    { id: user.id, role: user.role },
+    new Date(),
+  );
 
   return (
     <>
@@ -15,15 +22,15 @@ export default async function PortalHomePage() {
       <section className="dashboard-grid" aria-label={dictionary.dashboard}>
         <article className="dashboard-card dashboard-card--primary">
           <p>{dictionary.upcomingTraining}</p>
-          <strong>0</strong>
+          <strong>{summary.upcomingTraining}</strong>
         </article>
         <article className="dashboard-card">
           <p>{dictionary.completedTraining}</p>
-          <strong>0</strong>
+          <strong>{summary.completedSessions}</strong>
         </article>
         <article className="dashboard-card">
           <p>{dictionary.pendingApproval}</p>
-          <strong>0</strong>
+          <strong>{summary.pendingApproval}</strong>
         </article>
       </section>
     </>
