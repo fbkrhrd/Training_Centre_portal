@@ -3,6 +3,7 @@ import { requireUser } from "@/features/auth/require-user";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { requireSupabaseData } from "@/lib/data-access";
 import { createCourseAction } from "@/features/training/actions";
+import { getCourseRosterCounts } from "@/features/training/course-service";
 import { DeleteCourseButton } from "@/features/training/delete-course-button";
 
 const managers = ["system_admin", "education_manager"] as const;
@@ -10,15 +11,20 @@ const managers = ["system_admin", "education_manager"] as const;
 export default async function CoursesPage() {
   await requireUser(managers);
   const supabase = createAdminSupabaseClient();
-  const courses = requireSupabaseData(await supabase
-    .from("courses")
-    .select("id,title_ko,title_en,is_published,training_categories(name_ko)")
-    .order("created_at", { ascending: false }), "교육과정 목록") ?? [];
-  const categories = requireSupabaseData(await supabase
-    .from("training_categories")
-    .select("id,name_ko")
-    .eq("is_active", true)
-    .order("name_ko"), "교육 카테고리") ?? [];
+  const [coursesResult, categoriesResult, sessionsResult, approvedEnrollmentsResult] = await Promise.all([
+    supabase.from("courses").select("id,title_ko,title_en,is_published,training_categories(name_ko)").order("created_at", { ascending: false }),
+    supabase.from("training_categories").select("id,name_ko").eq("is_active", true).order("name_ko"),
+    supabase.from("course_sessions").select("id,course_id"),
+    supabase.from("enrollments").select("session_id").eq("status", "approved"),
+  ]);
+  const courses = requireSupabaseData(coursesResult, "교육과정 목록") ?? [];
+  const categories = requireSupabaseData(categoriesResult, "교육 카테고리") ?? [];
+  const sessions = requireSupabaseData(sessionsResult, "차수 목록") ?? [];
+  const approvedEnrollments = requireSupabaseData(approvedEnrollmentsResult, "승인 참가자 집계") ?? [];
+  const rosterCounts = getCourseRosterCounts(
+    sessions.map((session) => ({ id: session.id, courseId: session.course_id })),
+    approvedEnrollments.map((enrollment) => ({ sessionId: enrollment.session_id })),
+  );
 
   return <div className="content-panel content-panel--wide">
     <header className="page-heading"><p className="dashboard-intro__label">TRAINING MANAGEMENT</p><h1>교육과정 관리</h1><p>교육과정과 차수를 개설하고 담당자를 운영합니다.</p></header>
@@ -33,6 +39,6 @@ export default async function CoursesPage() {
         <button className="button button--primary user-form__submit">교육과정 생성</button>
       </form>
     </section>
-    <section className="content-card content-card--table"><h2>교육과정 목록</h2><div className="table-scroll"><table className="data-table"><thead><tr><th>국문 과정명</th><th>영문 과정명</th><th>카테고리</th><th>상태</th><th>작업</th></tr></thead><tbody>{courses.map((course) => <tr key={course.id}><td>{course.title_ko}</td><td>{course.title_en}</td><td>{(course.training_categories as { name_ko?: string } | null)?.name_ko ?? "-"}</td><td>{course.is_published ? "게시" : "작성"}</td><td><div className="button-row"><Link className="button button--quiet" href={`/admin/courses/${course.id}/participants`}>승인 참가자</Link><DeleteCourseButton courseId={course.id} /></div></td></tr>)}{!courses.length && <tr><td colSpan={5}>등록된 교육과정이 없습니다.</td></tr>}</tbody></table></div></section>
+    <section className="content-card content-card--table"><h2>교육과정 목록</h2><div className="table-scroll"><table className="data-table"><thead><tr><th>국문 과정명</th><th>영문 과정명</th><th>카테고리</th><th>차수</th><th>승인 인원</th><th>상태</th><th>작업</th></tr></thead><tbody>{courses.map((course) => { const roster = rosterCounts.get(course.id) ?? { sessionCount: 0, approvedParticipantCount: 0 }; return <tr key={course.id}><td>{course.title_ko}</td><td>{course.title_en}</td><td>{(course.training_categories as { name_ko?: string } | null)?.name_ko ?? "-"}</td><td>{roster.sessionCount}개</td><td>{roster.approvedParticipantCount}명</td><td>{course.is_published ? "게시" : "작성"}</td><td><div className="button-row"><Link className="button button--quiet" href={`/admin/courses/${course.id}/participants`}>승인 참가자 ({roster.approvedParticipantCount}명)</Link><DeleteCourseButton courseId={course.id} /></div></td></tr>; })}{!courses.length && <tr><td colSpan={7}>등록된 교육과정이 없습니다.</td></tr>}</tbody></table></div></section>
   </div>;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { assertCourseCanBeDeleted, assertCourseManagementAccess } from "./course-service";
+import { assertCourseCanBeDeleted, assertCourseManagementAccess, getCourseRosterCounts } from "./course-service";
 
 describe("assertCourseManagementAccess", () => {
   it("allows a system administrator to manage any course", async () => {
@@ -24,5 +24,23 @@ describe("assertCourseManagementAccess", () => {
 
   it("blocks deletion when the course has sessions", () => {
     expect(() => assertCourseCanBeDeleted(1)).toThrow("차수가 등록된 과정은 삭제할 수 없습니다.");
+  });
+
+  it("counts sessions and approved participants by course", () => {
+    expect(getCourseRosterCounts(
+      [
+        { id: "session-1", courseId: "course-1" },
+        { id: "session-2", courseId: "course-1" },
+        { id: "session-3", courseId: "course-2" },
+      ],
+      [
+        { sessionId: "session-1" },
+        { sessionId: "session-1" },
+        { sessionId: "session-3" },
+      ],
+    )).toEqual(new Map([
+      ["course-1", { sessionCount: 2, approvedParticipantCount: 2 }],
+      ["course-2", { sessionCount: 1, approvedParticipantCount: 1 }],
+    ]));
   });
 });
