@@ -159,6 +159,13 @@ a {
   gap: 6px;
 }
 
+.app-sidebar__loading {
+  margin: 8px 14px 0;
+  color: var(--fbkr-green-700);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .app-sidebar__link {
   min-height: 44px;
   padding: 0 14px;
