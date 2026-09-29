@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { assertCourseManagementAccess } from "./course-service";
+import { assertCourseCanBeDeleted, assertCourseManagementAccess } from "./course-service";
 
 describe("assertCourseManagementAccess", () => {
   it("allows a system administrator to manage any course", async () => {
@@ -20,5 +20,9 @@ describe("assertCourseManagementAccess", () => {
         "user-1",
       ),
     ).rejects.toThrow("담당 교육과정만");
+  });
+
+  it("blocks deletion when the course has sessions", () => {
+    expect(() => assertCourseCanBeDeleted(1)).toThrow("차수가 등록된 과정은 삭제할 수 없습니다.");
   });
 });

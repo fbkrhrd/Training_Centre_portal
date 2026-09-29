@@ -1,11 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { requireUser } from "@/features/auth/require-user";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { courseInputSchema } from "./course-schema";
 import { sessionInputSchema } from "./session-schema";
-import { assertCourseManagementAccess } from "./course-service";
+import { assertCourseCanBeDeleted, assertCourseManagementAccess } from "./course-service";
 import { assertSessionStatusChangeAccess, assertSessionStatusTransition, type SessionStatus } from "./session-service";
 
 const managers = ["system_admin", "education_manager"] as const;
@@ -34,6 +35,44 @@ export async function createCourseAction(formData: FormData) {
   });
   if (managerError) throw managerError;
   revalidatePath("/admin/courses");
+}
+
+export async function deleteCourseAction(formData: FormData) {
+  const user = await requireUser(managers);
+  const courseId = z.string().uuid().parse(String(formData.get("courseId") ?? ""));
+  const supabase = createAdminSupabaseClient();
+
+  await assertCourseManagementAccess({
+    async isAssignedManager(targetCourseId, userId) {
+      const { data } = await supabase
+        .from("course_managers")
+        .select("course_id")
+        .eq("course_id", targetCourseId)
+        .eq("manager_id", userId)
+        .maybeSingle();
+      return Boolean(data);
+    },
+  }, user.role, courseId, user.id);
+
+  const { count, error: sessionError } = await supabase
+    .from("course_sessions")
+    .select("id", { count: "exact", head: true })
+    .eq("course_id", courseId);
+  if (sessionError) throw sessionError;
+  assertCourseCanBeDeleted(count ?? 0);
+
+  const { data: deletedCourse, error: deleteError } = await supabase
+    .from("courses")
+    .delete()
+    .eq("id", courseId)
+    .select("id")
+    .maybeSingle();
+  if (deleteError || !deletedCourse) throw deleteError ?? new Error("교육과정을 찾을 수 없습니다.");
+
+  revalidatePath("/admin/courses");
+  revalidatePath("/admin/sessions");
+  revalidatePath("/courses");
+  revalidatePath("/");
 }
 
 export async function createSessionAction(formData: FormData) {

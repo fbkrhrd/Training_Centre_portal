@@ -2,6 +2,7 @@ import { requireUser } from "@/features/auth/require-user";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { requireSupabaseData } from "@/lib/data-access";
 import { createCourseAction } from "@/features/training/actions";
+import { DeleteCourseButton } from "@/features/training/delete-course-button";
 
 const managers = ["system_admin", "education_manager"] as const;
 
@@ -31,6 +32,6 @@ export default async function CoursesPage() {
         <button className="button button--primary user-form__submit">교육과정 생성</button>
       </form>
     </section>
-    <section className="content-card content-card--table"><h2>교육과정 목록</h2><div className="table-scroll"><table className="data-table"><thead><tr><th>국문 과정명</th><th>영문 과정명</th><th>카테고리</th><th>상태</th></tr></thead><tbody>{courses.map((course) => <tr key={course.id}><td>{course.title_ko}</td><td>{course.title_en}</td><td>{(course.training_categories as { name_ko?: string } | null)?.name_ko ?? "-"}</td><td>{course.is_published ? "게시" : "작성"}</td></tr>)}{!courses.length && <tr><td colSpan={4}>등록된 교육과정이 없습니다.</td></tr>}</tbody></table></div></section>
+    <section className="content-card content-card--table"><h2>교육과정 목록</h2><div className="table-scroll"><table className="data-table"><thead><tr><th>국문 과정명</th><th>영문 과정명</th><th>카테고리</th><th>상태</th><th>작업</th></tr></thead><tbody>{courses.map((course) => <tr key={course.id}><td>{course.title_ko}</td><td>{course.title_en}</td><td>{(course.training_categories as { name_ko?: string } | null)?.name_ko ?? "-"}</td><td>{course.is_published ? "게시" : "작성"}</td><td><DeleteCourseButton courseId={course.id} /></td></tr>)}{!courses.length && <tr><td colSpan={5}>등록된 교육과정이 없습니다.</td></tr>}</tbody></table></div></section>
   </div>;
 }

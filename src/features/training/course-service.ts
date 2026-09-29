@@ -18,3 +18,9 @@ export async function assertCourseManagementAccess(
     throw new Error("담당 교육과정만 관리할 수 있습니다.");
   }
 }
+
+export function assertCourseCanBeDeleted(sessionCount: number) {
+  if (sessionCount > 0) {
+    throw new Error("차수가 등록된 과정은 삭제할 수 없습니다.");
+  }
+}
