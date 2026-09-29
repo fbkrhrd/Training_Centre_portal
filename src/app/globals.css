@@ -190,6 +190,33 @@ a {
   padding: 36px clamp(20px, 4vw, 56px);
 }
 
+.portal-loading {
+  min-height: 220px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  color: var(--fbkr-gray);
+}
+
+.portal-loading__indicator {
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--fbkr-green-100);
+  border-top-color: var(--fbkr-green-600);
+  border-radius: 50%;
+  animation: portal-loading-spin 700ms linear infinite;
+}
+
+.portal-loading p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+@keyframes portal-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
 .dashboard-intro {
   max-width: 760px;
   padding: 18px 0 34px;

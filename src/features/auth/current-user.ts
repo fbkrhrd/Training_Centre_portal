@@ -1,8 +1,8 @@
 import { isAppRole, type CurrentUser } from "./types";
 
-type VerifiedUser = {
-  id: string;
-  appMetadata: Record<string, unknown>;
+type VerifiedClaims = {
+  sub: string;
+  app_metadata: Record<string, unknown>;
 };
 
 type Profile = {
@@ -13,18 +13,18 @@ type Profile = {
 };
 
 export type CurrentUserDependencies = {
-  getUser(): Promise<VerifiedUser | null>;
+  getClaims(): Promise<VerifiedClaims | null>;
   getProfile(userId: string): Promise<Profile | null>;
 };
 
 export async function resolveCurrentUser(
   dependencies: CurrentUserDependencies,
 ): Promise<CurrentUser | null> {
-  const user = await dependencies.getUser();
-  if (!user) return null;
+  const claims = await dependencies.getClaims();
+  if (!claims) return null;
 
-  const profile = await dependencies.getProfile(user.id);
-  const role = user.appMetadata.role;
+  const profile = await dependencies.getProfile(claims.sub);
+  const role = claims.app_metadata.role;
 
   if (
     !profile ||
@@ -35,7 +35,7 @@ export async function resolveCurrentUser(
   }
 
   return {
-    id: user.id,
+    id: claims.sub,
     role,
     employeeNo: profile.employee_no,
     fullName: profile.full_name,

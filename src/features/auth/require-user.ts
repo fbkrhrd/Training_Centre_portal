@@ -9,12 +9,15 @@ const loadCurrentUser = cache(async () => {
   const supabase = await createServerSupabaseClient();
 
   const user = await resolveCurrentUser({
-    async getUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data.user) return null;
+    async getClaims() {
+      const { data, error } = await supabase.auth.getClaims();
+      const claims = data?.claims;
+      if (error || !claims || typeof claims.sub !== "string") return null;
       return {
-        id: data.user.id,
-        appMetadata: data.user.app_metadata,
+        sub: claims.sub,
+        app_metadata: typeof claims.app_metadata === "object" && claims.app_metadata !== null
+          ? claims.app_metadata
+          : {},
       };
     },
     async getProfile(userId) {
