@@ -2,7 +2,7 @@ import { requireUser } from "@/features/auth/require-user";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { requireSupabaseData } from "@/lib/data-access";
 import { formatKst } from "@/lib/kst-date-time";
-import { createSessionAction } from "@/features/training/actions";
+import { createSessionAction, updateSessionStatusAction } from "@/features/training/actions";
 
 const managers = ["system_admin", "education_manager"] as const;
 
@@ -19,6 +19,6 @@ export default async function SessionsPage() {
       <label><span>시작 일시</span><input name="startsAt" type="datetime-local" required /></label><label><span>종료 일시</span><input name="endsAt" type="datetime-local" required /></label><label><span>신청 시작</span><input name="applicationOpensAt" type="datetime-local" required /></label>
       <label><span>신청 마감</span><input name="applicationClosesAt" type="datetime-local" required /></label><label><span>취소 마감</span><input name="cancellationClosesAt" type="datetime-local" required /></label><button className="button button--primary user-form__submit">차수 생성</button>
     </form></section>
-    <section className="content-card content-card--table"><h2>차수 목록</h2><div className="table-scroll"><table className="data-table"><thead><tr><th>과정</th><th>차수</th><th>시작</th><th>정원</th><th>상태</th></tr></thead><tbody>{sessions.map(s => <tr key={s.id}><td>{(s.courses as {title_ko?:string}|null)?.title_ko}</td><td>{s.session_no}</td><td>{formatKst(s.starts_at)}</td><td>{s.capacity}</td><td>{s.status}</td></tr>)}{!sessions.length && <tr><td colSpan={5}>등록된 차수가 없습니다.</td></tr>}</tbody></table></div></section>
+    <section className="content-card content-card--table"><h2>차수 목록</h2><div className="table-scroll"><table className="data-table"><thead><tr><th>과정</th><th>차수</th><th>시작</th><th>정원</th><th>상태</th></tr></thead><tbody>{sessions.map(s => <tr key={s.id}><td>{(s.courses as {title_ko?:string}|null)?.title_ko}</td><td>{s.session_no}</td><td>{formatKst(s.starts_at)}</td><td>{s.capacity}</td><td><form action={updateSessionStatusAction}><input type="hidden" name="sessionId" value={s.id}/><select name="status" defaultValue={s.status}><option value={s.status}>{s.status}</option>{s.status === "draft" && <option value="open">open</option>}{s.status === "draft" && <option value="cancelled">cancelled</option>}{s.status === "open" && <option value="closed">closed</option>}{s.status === "open" && <option value="cancelled">cancelled</option>}{s.status === "closed" && <option value="open">open</option>}{s.status === "closed" && <option value="completed">completed</option>}{s.status === "closed" && <option value="cancelled">cancelled</option>}</select><button className="button button--quiet">변경</button></form></td></tr>)}{!sessions.length && <tr><td colSpan={5}>등록된 차수가 없습니다.</td></tr>}</tbody></table></div></section>
   </div>;
 }

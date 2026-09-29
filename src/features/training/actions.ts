@@ -6,6 +6,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { courseInputSchema } from "./course-schema";
 import { sessionInputSchema } from "./session-schema";
 import { assertCourseManagementAccess } from "./course-service";
+import { assertSessionStatusChangeAccess, assertSessionStatusTransition, type SessionStatus } from "./session-service";
 
 const managers = ["system_admin", "education_manager"] as const;
 
@@ -53,4 +54,32 @@ export async function createSessionAction(formData: FormData) {
   });
   if (error) throw error;
   revalidatePath("/admin/sessions");
+}
+
+export async function updateSessionStatusAction(formData: FormData) {
+  const user = await requireUser(managers);
+  const sessionId = String(formData.get("sessionId") ?? "");
+  const target = String(formData.get("status") ?? "") as SessionStatus;
+  if (!sessionId) throw new Error("차수를 찾을 수 없습니다.");
+  const supabase = createAdminSupabaseClient();
+  const { data: session, error } = await supabase
+    .from("course_sessions")
+    .select("course_id,status,starts_at,ends_at,application_opens_at,application_closes_at,cancellation_closes_at")
+    .eq("id", sessionId)
+    .single();
+  if (error || !session) throw new Error("차수를 찾을 수 없습니다.");
+  await assertSessionStatusChangeAccess({
+    async isAssignedManager(courseId, userId) {
+      const { data } = await supabase.from("course_managers").select("course_id").eq("course_id", courseId).eq("manager_id", userId).maybeSingle();
+      return Boolean(data);
+    },
+  }, user.role, session.course_id, user.id);
+  const status = assertSessionStatusTransition(
+    session.status as SessionStatus,
+    target,
+    Boolean(session.starts_at && session.ends_at && session.application_opens_at && session.application_closes_at && session.cancellation_closes_at),
+  );
+  const { error: updateError } = await supabase.from("course_sessions").update({ status }).eq("id", sessionId);
+  if (updateError) throw updateError;
+  revalidatePath("/admin/sessions"); revalidatePath("/courses"); revalidatePath("/");
 }
