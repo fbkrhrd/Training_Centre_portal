@@ -14,6 +14,9 @@ export function assertSessionStatusTransition(
   target: SessionStatus,
   hasRequiredOperations: boolean,
 ): SessionStatus {
+  if (current === target) {
+    return current;
+  }
   if (!transitions[current].includes(target)) {
     throw new Error("현재 상태에서는 변경할 수 없습니다.");
   }

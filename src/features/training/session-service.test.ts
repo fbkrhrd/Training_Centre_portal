@@ -14,4 +14,8 @@ describe("nextSessionStatus", () => {
     expect(() => assertSessionStatusTransition("completed", "open", true))
       .toThrow("변경할 수 없습니다");
   });
+
+  it("accepts submitting the current status without changing the session", () => {
+    expect(assertSessionStatusTransition("draft", "draft", true)).toBe("draft");
+  });
 });
