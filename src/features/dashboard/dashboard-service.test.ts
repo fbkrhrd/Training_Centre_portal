@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getDashboardSummary } from "./dashboard-service";
+import { getDashboardDetail, getDashboardSummary } from "./dashboard-service";
 
 const now = new Date("2026-10-01T00:00:00.000Z");
 const source = {
@@ -24,5 +24,19 @@ describe("getDashboardSummary", () => {
   it("counts pending applications only for assigned manager courses", () => {
     expect(getDashboardSummary(source, { id: "manager-1", role: "education_manager" }, now))
       .toMatchObject({ upcomingTraining: 1, pendingApproval: 1 });
+  });
+
+  it("returns only approved future sessions for a participant's upcoming detail", () => {
+    const detail = getDashboardDetail(source, { id: "participant-1", role: "participant" }, "upcoming", new Date("2026-10-01T00:00:00.000Z"));
+
+    expect(detail.sessions.map((session) => session.id)).toEqual(["session-1"]);
+    expect(detail.enrollments).toEqual([]);
+  });
+
+  it("returns only assigned-course pending applications for a manager's detail", () => {
+    const detail = getDashboardDetail(source, { id: "manager-1", role: "education_manager" }, "pending", new Date("2026-10-01T00:00:00.000Z"));
+
+    expect(detail.sessions).toEqual([]);
+    expect(detail.enrollments.map((enrollment) => enrollment.sessionId)).toEqual(["session-1"]);
   });
 });

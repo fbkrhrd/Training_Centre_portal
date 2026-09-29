@@ -226,10 +226,19 @@ a {
 }
 
 .dashboard-card {
+  display: block;
   min-height: 132px;
   padding: 22px;
   border: 1px solid var(--fbkr-line);
   background: var(--fbkr-paper);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.dashboard-card:hover,
+.dashboard-card:focus-visible {
+  border-color: var(--fbkr-green-500);
+  box-shadow: 0 6px 18px rgba(1, 73, 55, 0.12);
+  transform: translateY(-2px);
 }
 
 .dashboard-card--primary {

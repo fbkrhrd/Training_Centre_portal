@@ -31,5 +31,8 @@ describe("PortalHomePage", () => {
     expect(screen.getByText("완료 차수")).toBeInTheDocument();
     expect(screen.getByText("승인 대기")).toBeInTheDocument();
     expect(screen.getAllByText("1")).toHaveLength(3);
+    expect(screen.getByRole("link", { name: "예정된 교육 1" })).toHaveAttribute("href", "/dashboard/details?metric=upcoming");
+    expect(screen.getByRole("link", { name: "완료 차수 1" })).toHaveAttribute("href", "/dashboard/details?metric=completed");
+    expect(screen.getByRole("link", { name: "승인 대기 1" })).toHaveAttribute("href", "/dashboard/details?metric=pending");
   });
 });
